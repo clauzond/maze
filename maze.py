@@ -194,16 +194,19 @@ def boucle(debut,fin,couple_x1y1,couple_x2y2):
         # Conditions d'arrêts
         if fin.coords in closedlist_coords:
             a=1
-
+            Liste_Fin_F=[closedlist[-1].f]
             Liste_Fin=[closedlist[-1].coords]
             bidule=closedlist[-1]
             while debut.coords not in Liste_Fin:
                 Liste_Fin.append( (bidule.parent).coords)
+                Liste_Fin_F.append( (bidule.parent).f )
                 bidule=bidule.parent
                 #if bidule.coords!=debut.coords:
                 #    colorier_case(bidule.coords,couple_x1y1,couple_x2y2,"yellow")
             Liste_Fin.reverse()
+            Liste_Fin_F.reverse()
             colorier_liste(Liste_Fin,couple_x1y1,couple_x2y2,"yellow",debut.coords,fin.coords)
+            print("Chemin :",Liste_Fin,"\n","Liste F :",Liste_Fin_F)
         elif openlist==[] or openlist_coords==[]:
             a=1
             Liste_Fin="Désolé, il n'y a pas de solution... Bonne chance :)"
@@ -319,6 +322,31 @@ def creer_mur(coord01,coord02,fat=0):
         L=sorted(L, key=lambda x: x[0])
         return(L)
 
+# Fonction qui détecte les portions où F augmente (dernier "checkpoint" -> dernier "f baisse")
+# Il renvoie les portions à changer !
+def portions_effe(Liste_Coords,Liste_F):
+    Liste_de_listes = []
+    Liste_first_indice = []
+    i=0
+    while i!=(len(Liste_F)-1):
+        first_indice=i
+        while Liste_F[i+1]>Liste_F[i] :
+            i+=1
+        # Si l'indice n'a pas changé, pas de changements
+        if first_indice==i :
+            Liste_first_indice.append( first_indice )
+        else:
+            L= Liste_first_indice + [k for k in range(first_indice,i + 1)]
+            Liste_de_listes.append( L )
+            Liste_first_indice=[]
+        i+=1
+    Liste_de_listes.append(Liste_first_indice)
+    
+    final=[]
+    for liste in Liste_de_listes :
+        final.append( [ Liste_Coords[liste[0]],Liste_Coords[liste[-1]]] )
+    
+    return(final)
 
 # Creation de la fenêtre
 def start_window(coord1,coord2):
@@ -377,7 +405,7 @@ def setup(coord1,coord2):
     
     
     # Le pas doit dépendre des hauteurs/largeurs pour rentrer dans l'écran.
-    pas=int(900/((hauteur_bc+largeur_bc)/2))
+    pas=int(600/((hauteur_bc+largeur_bc)/2))
     
     # La taille de la fenêtre, REEL * PAS
     grid_window.geometry('%dx%d' % (largeur_bc*pas, hauteur_bc*pas))
