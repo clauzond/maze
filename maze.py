@@ -8,11 +8,6 @@ class maze:
     # Comment définir entièrement une case
     def __init__( self,coords,parent=[] ):
         self.coords=coords
-        #self.parent=parent
-
-        """self.g=-1
-        self.h=-1
-        self.f=-1"""
 
     def __repr__(self):
         return("||"+str(self.coords[0])+","+str(self.coords[1])+"||")
@@ -38,10 +33,6 @@ class maze:
 
 
     # f = g + h, approximation de la distance pour atteindre l'arrivée pour une case donnée
-    """def f(self,fin,ret=1,debut=[0,0]):
-        self.f = self.g(fin,0,debut) + self.h(fin,0)
-        if ret==1:
-            return(self.f)"""
 
     # Actualise directement self.f,self.g,self.h pour pouvoir les manipuler sans calcul
     def fh(self,debut,fin):
@@ -78,6 +69,8 @@ def is_lowest_G(element,liste,fin):
             return(False)
     return(True)
 
+
+# (*) A ajouter : ne pas faire de "diagonale" si il y a trop d'obstacles autour
 def qui_adjacents(x,y,couple_x1y1,couple_x2y2):
     liste=[]
     petitX=min(couple_x1y1[0],couple_x2y2[0])
@@ -213,9 +206,6 @@ def start_algo(debut_coords,fin_coords,couple_x1y1,couple_x2y2,obstacles=[],reto
 
 
 
-# Trucs effacés, qui pourraient être utile plus tard ?
-
-
 
 def labbi(coord1,coord2):
     xmin=min(coord1[0],coord2[0])
@@ -271,25 +261,21 @@ def creer_mur(coord01,coord02,fat=0):
         # Si les 2 se trouvent au même X, on remonte/descend
         # copysign(1,deltaY) renvoie 1 si deltaY>0, et -1 si deltaY<0
         elif deltaX==0:
-            #coord1[1] += int(copysign(1,deltaY))
             coord1 = (coord1[0],coord1[1]+int(copysign(1,deltaY)))
             L.append(list(coord1))
 
         # Si les 2 se trouvent au même Y, on va à droite/gauche
         elif deltaY==0:
-            #coord1[0] += int(copysign(1,deltaX))
             coord1 = (coord1[0]+int(copysign(1,deltaX)),coord1[1])
             L.append(list(coord1))
 
         else:
         # Les tours pairs on ajoute "coord1 +/- 1", impairs on ajoute "coord2 +/- 1"
-            # coord1[0] + sg(deltaX) /// coord1[1] + sg(deltaY)
             if compteur_tour%2==0:
                 coord1 = (coord1[0] + int(copysign(1,deltaX)),coord1[1] + int(copysign(1,deltaY)))
                 compteur_tour+=1
                 L.append(list(coord1))
 
-            # coord2[0] + sg(-deltaX) /// coord2[1] + sg(-deltaY)
             else:
                 coord2 = (coord2[0] + int(copysign(1,-deltaX)),coord2[1] + int(copysign(1,-deltaY)))
                 compteur_tour+=1
@@ -380,16 +366,10 @@ def start_window(coord1,coord2):
 
 
 def colorier_liste(liste_coords,coord1,coord2,col_arg="green",debut_coords=[],fin_coords=[]):
-    #mainCanvas.delete("carre")
     
     for coord0 in liste_coords:
         if coord0 != debut_coords and coord0 != fin_coords:
             window_coord=[(coord0[0] + abs(coord1[0]))*pas , (coord0[1] + abs(coord1[1]))*pas]
-            #if not (0<=window_coord[0]<=largeur_bc*pas):
-            #    print("erreur")
-            #elif not (0<=window_coord[1]<=hauteur_bc*pas):
-            #    print("erreur 2")
-            
             mainCanvas.create_rectangle(window_coord[0],window_coord[1],window_coord[0]+pas,window_coord[1]+pas,fill=col_arg,tag="carre")
     mainCanvas.update()
   
@@ -405,6 +385,7 @@ def colorier_case(coord0,coord1,coord2,col_arg="green"):
     mainCanvas.update()
 
 # Clique droit pour remettre la bonne taille de fenêtre
+# (*) La fonction qui détermine le pas est minable pour rentrer dans "tout écran"
 def setup(coord1,coord2):
     global largeur_bc,hauteur_bc,pas
     largeur_bc = abs(coord2[0] - coord1[0]) + 1
@@ -421,9 +402,6 @@ def setup(coord1,coord2):
     
 
 
-# Clique gauche pour tracer à nouveau les lignes
-# Objectif principal : assimiler "liste_selon_hauteur" et "liste_selon_largeur" aux vrais coordonnées.
-# Une fonction s'impose
 
 
 def create_grid():
@@ -603,5 +581,3 @@ truc_chelou_lol = creer_mur([1,1],[1,7]) + creer_mur([1,7],[8,7])+creer_mur([8,7
 
 
 Niveau.mainloop()
-
-# BUG CONNU : Quand le début et l'arrivée sont pas dans un bon sens, le programme marche mal.
