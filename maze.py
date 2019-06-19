@@ -26,7 +26,7 @@ class maze:
         x = abs(self.coords[0] - fin.coords[0])
         y = abs(self.coords[1] - fin.coords[1])
  
-        self.h=x**2 + y**2
+        self.h=sqrt(x**2 + y**2)
  
         if ret==1:
             return(self.h)
@@ -38,7 +38,7 @@ class maze:
     def fh(self,debut,fin):
         x = abs(self.coords[0] - fin.coords[0])
         y = abs(self.coords[1] - fin.coords[1])
-        self.h=x**2 + y**2
+        self.h=sqrt(x**2 + y**2)
  
         self.f = self.g + self.h
  
@@ -157,10 +157,11 @@ def start_algo(debut_coords,fin_coords,couple_x1y1,couple_x2y2,obstacles=[],reto
             if square.coords not in closedlist_coords:
                 # S'il n'est pas dans l'openlist, l'ajoute, défini son parent, et calcule fgh
                 if square.coords not in openlist_coords:
-                    square.g=current.g + int(copysign(1,current.coords[0]-square.coords[0] + current.coords[1] - square.coords[1]))
-                    #square.g = current.g + 1
-                    square.h=square.h(fin,1)
-                    square.f=square.g+square.h
+                    #square.g=current.g + int(copysign(1,current.coords[0]-square.coords[0] + current.coords[1] - square.coords[1]))
+                    square.g = current.g + 1
+                    square.fh(debut,fin)
+                    #square.h=square.h(fin,1)
+                    #square.f=square.g+square.h
                    
                     openlist.append(square)
                     openlist_coords.append(square.coords)
@@ -175,7 +176,8 @@ def start_algo(debut_coords,fin_coords,couple_x1y1,couple_x2y2,obstacles=[],reto
                         if is_lowest_G(square.g,openlist,fin):
                             square.parent=current
                     except:
-                        square.g=current.g + int(copysign(1,current.coords[0]-square.coords[0] + current.coords[1] - square.coords[1]))
+                        square.g = current.g + 1
+                        square.fh(debut,fin)
                         if is_lowest_G(square.g,openlist,fin):
                             square.parent=current
  
@@ -193,14 +195,20 @@ def start_algo(debut_coords,fin_coords,couple_x1y1,couple_x2y2,obstacles=[],reto
                
             Liste_Fin.reverse()
             Liste_Fin_F.reverse()
+            
+            
+            
             if retour=="liste/liste_f":
                 return(Liste_Fin,Liste_Fin_F)
             elif retour=="liste_f":
                 return(Liste_Fin_F)
             elif retour=="chemin_opti":
+                print("Je passe dans chemin opti")
                 portion_f=portions_effe(Liste_Fin,Liste_Fin_F)
                 return(refaire_chemin(portion_f,obstacles,couple_x1y1,couple_x2y2)[0])
             else:
+                print("Je passe dans chemin pas opti du tout")
+                print("Liste_Fin, sans opti = ",Liste_Fin)
                 return(Liste_Fin)
            
         elif openlist==[] or openlist_coords==[]:
@@ -460,11 +468,10 @@ def BoutonResoudre():
     colorier_case(c2,coord1,coord2,"orange")
    
     chemin_opti=start_algo(c1,c2,coord1,coord2,obstacl,"chemin_opti")
-    print("Chemin opti",chemin_opti)
     
     points_clefs_x,points_clefs_y=Chemin_into_points_clefs(chemin_opti)
     liste_couple_points_clefs=convert_x_and_y_into_xy(points_clefs_x,points_clefs_y)
-    print("Points clefs",liste_couple_points_clefs)
+    #print("Points clefs",liste_couple_points_clefs)
     
     
     colorier_liste(chemin_opti,coord1,coord2,"yellow",chemin_opti[0],chemin_opti[-1])
