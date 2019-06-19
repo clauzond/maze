@@ -21,6 +21,7 @@ class maze:
  
     # Distance par rapport à l'arrivée
     # approximation h = x² + y², x et y les droites pour arriver à l'arrivée
+    # Racine carré pas obligatoire, mais ça me rassure un peu
  
     def h(self,fin,ret=1):
         x = abs(self.coords[0] - fin.coords[0])
@@ -33,8 +34,9 @@ class maze:
  
  
     # f = g + h, approximation de la distance pour atteindre l'arrivée pour une case donnée
+    # Racine carré pas obligatoire, mais ça me rassure un peu
  
-    # Actualise directement self.f,self.g,self.h pour pouvoir les manipuler sans calcul
+    # Actualise directement self.f,self.h pour pouvoir les manipuler sans calcul
     def fh(self,debut,fin):
         x = abs(self.coords[0] - fin.coords[0])
         y = abs(self.coords[1] - fin.coords[1])
@@ -155,31 +157,25 @@ def start_algo(debut_coords,fin_coords,couple_x1y1,couple_x2y2,obstacles=[],reto
         for square in adjacents:
             # S'il n'est pas dans la closedlist, continue
             if square.coords not in closedlist_coords:
-                # S'il n'est pas dans l'openlist, l'ajoute, défini son parent, et calcule fgh
+                # S'il n'est pas dans l'openlist, l'ajoute, défini son parent, et calcule F G et H
                 if square.coords not in openlist_coords:
-                    #square.g=current.g + int(copysign(1,current.coords[0]-square.coords[0] + current.coords[1] - square.coords[1]))
+                    # On définit son G comme le G du parent +1
                     square.g = current.g + 1
+                    # On calcule F et H 
                     square.fh(debut,fin)
-                    #square.h=square.h(fin,1)
-                    #square.f=square.g+square.h
                    
                     openlist.append(square)
                     openlist_coords.append(square.coords)
                     square.parent = current
-                    # On définit son G comme le G du parent +1, longueur du chemin de "square" à "debut"
                    
                    
                 # Sinon, on regarde si son chemin est meilleur (proche du départ).
                 else:
-                    # Si son chemin est meilleur, défini son parent et calcule son f,g,h
-                    try:
-                        if is_lowest_G(square.g,openlist,fin):
-                            square.parent=current
-                    except:
-                        square.g = current.g + 1
-                        square.fh(debut,fin)
-                        if is_lowest_G(square.g,openlist,fin):
-                            square.parent=current
+                    # Si son chemin est meilleur, défini son parent et recalcule son f,g,h si ce n'est pas déjà fait
+                    square.g = current.g + 1
+                    square.fh(debut,fin)
+                    if is_lowest_G(square.g,openlist,fin):
+                        square.parent=current
  
         # Conditions d'arrêts
         if fin.coords in closedlist_coords:
@@ -203,12 +199,14 @@ def start_algo(debut_coords,fin_coords,couple_x1y1,couple_x2y2,obstacles=[],reto
             elif retour=="liste_f":
                 return(Liste_Fin_F)
             elif retour=="chemin_opti":
-                print("Je passe dans chemin opti")
+                N=len(Liste_Fin)
                 portion_f=portions_effe(Liste_Fin,Liste_Fin_F)
-                return(refaire_chemin(portion_f,obstacles,couple_x1y1,couple_x2y2)[0])
+                chemin_opti=refaire_chemin(portion_f,obstacles,couple_x1y1,couple_x2y2)[0]
+                N_opti=len(chemin_opti)
+                if N!=N_opti:
+                    print("OOOOO")
+                return(chemin_opti)
             else:
-                print("Je passe dans chemin pas opti du tout")
-                print("Liste_Fin, sans opti = ",Liste_Fin)
                 return(Liste_Fin)
            
         elif openlist==[] or openlist_coords==[]:
@@ -372,28 +370,27 @@ def start_window(coord1,coord2):
  
  
  
-# Variables à modifier selon les coordonnées de départ
- 
- 
- 
- 
+
+# Itération sur une liste de la fonction "colorier_case"
 def colorier_liste(liste_coords,coord1,coord2,col_arg="green",debut_coords=[],fin_coords=[]):
-   
     for coord0 in liste_coords:
         if coord0 != debut_coords and coord0 != fin_coords:
             window_coord=[(coord0[0] + abs(coord1[0]))*pas , (coord0[1] + abs(coord1[1]))*pas]
             mainCanvas.create_rectangle(window_coord[0],window_coord[1],window_coord[0]+pas,window_coord[1]+pas,fill=col_arg,tag="carre")
     mainCanvas.update()
  
+# coord0 correspond à la case à colorier
+# coord1 correspond à la limite "haut gauche" de la fenêtre
+# coord2 correspond à la limite "bas droite" de la fenêtre (pas nécessaire, car si on sort de l'écran alors colorier revient à ne rien faire)
 def colorier_case(coord0,coord1,coord2,col_arg="green"):
-    #mainCanvas.delete("carre")
     window_coord=[(coord0[0] + abs(coord1[0]))*pas , (coord0[1] + abs(coord1[1]))*pas]
    
     mainCanvas.create_rectangle(window_coord[0],window_coord[1],window_coord[0]+pas,window_coord[1]+pas,fill=col_arg,tag="carre")
     mainCanvas.update()
  
-# Clique droit pour remettre la bonne taille de fenêtre
-# (*) La fonction qui détermine le pas est minable pour rentrer dans "tout écran"
+ 
+# Fonction qui initialise le pas, la largeur et hauteur de nos intervalles
+# (*) La fonction ne détermine pas la taille de l'écran de l'utilisateur
 def setup(coord1,coord2):
     global largeur_bc,hauteur_bc,pas
     largeur_bc = abs(coord2[0] - coord1[0]) + 1
@@ -401,6 +398,8 @@ def setup(coord1,coord2):
    
    
     # Le pas doit dépendre des hauteurs/largeurs pour rentrer dans l'écran.
+    # Le chiffre avant division correspond à la plus petite dimension de l'écran.
+    # Exemple : si je suis en 1920*1080, je dois mettre 1080
     pas=int(600/((hauteur_bc+largeur_bc)/2))
    
     # La taille de la fenêtre, REEL * PAS
@@ -416,8 +415,6 @@ def create_grid():
     mainCanvas.delete("ligne")
    
     # On doit pouvoir générer le bon nombre de carré (en ligne, et en colonne)
-    # Là, c'est bon !
- 
  
     # Génération de lignes sur toute la hauteur (haut en bas), avec un pas proportionnel aux coordonnées
     for i in range(0,hauteur_bc*pas,pas):
@@ -477,6 +474,7 @@ def BoutonResoudre():
     colorier_liste(chemin_opti,coord1,coord2,"yellow",chemin_opti[0],chemin_opti[-1])
 
     colorier_liste(liste_couple_points_clefs,coord1,coord2,"blue")
+
     
 Niveau=Tk()
  
