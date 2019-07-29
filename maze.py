@@ -203,8 +203,12 @@ def start_algo(debut_coords,fin_coords,couple_x1y1,couple_x2y2,obstacles=[],reto
                 portion_f=portions_effe(Liste_Fin,Liste_Fin_F)
                 chemin_opti=refaire_chemin(portion_f,obstacles,couple_x1y1,couple_x2y2)[0]
                 N_opti=len(chemin_opti)
-                if N!=N_opti:
-                    print("OOOOO")
+                
+                if N<N_opti:
+                    print("chemin opti plus long")
+                if N>N_opti:
+                    print("chemin opti plus long")
+                
                 return(chemin_opti)
             else:
                 return(Liste_Fin)
@@ -341,6 +345,8 @@ def portions_effe(Liste_Coords,Liste_F):
    
     return(final)
  
+
+
 def refaire_chemin(portion_f,obstacles,limite1,limite2):
     new_chemin=[]
     new_chemin_F=[]
@@ -474,6 +480,7 @@ def BoutonResoudre():
     colorier_liste(chemin_opti,coord1,coord2,"yellow",chemin_opti[0],chemin_opti[-1])
 
     colorier_liste(liste_couple_points_clefs,coord1,coord2,"blue")
+    
 
     
 Niveau=Tk()
@@ -628,7 +635,7 @@ def example(x,y):
     '''Plot interpolated Gaussian noise.'''
     #x = numpy.sort(numpy.random.random(10) * 100)
     #y = numpy.random.normal(0.0, 10, size=len(x))
-    x2 = numpy.linspace(x[0],x[-1], 100)
+    x2 = numpy.linspace(x[0],x[-1], 1000)
     f2 = Akima1DInterpolator(x, y)
     f3 = interp1d(x,y)
     #f4 = CubicSpline(x,y)
@@ -637,7 +644,7 @@ def example(x,y):
     pyplot.plot(x2, f2(x2), 'r-', label='akima')
     pyplot.plot(x2, f3(x2), 'b:', label='scipy', linewidth=2.5)
     #pyplot.plot(x2, f4(x2), 'g:', label='cubicspline', linewidth=2.5)
-    pyplot.plot(x, y, 'go', label='data')
+    pyplot.plot(x, y, 'bo', label='data')
     pyplot.legend()
     pyplot.show()
     
@@ -665,8 +672,8 @@ def convert_x_and_y_into_xy(L1,L2):
 L_chemin=[[-10, -10], [-9, -9], [-8, -8], [-7, -7], [-6, -6], [-5, -5], [-4, -4], [-3, -3], [-2, -2], [-1, -1], [0, 0], [0, 1], [0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 1], [6, 0], [7, -1], [8, -2], [9, -3], [10, -4], [10, -5], [10, -6], [10, -7], [10, -8], [10, -9], [10, -10]]
 (x,y)=convert_xy_into_x_and_y(L_chemin)
 0,9,12,16,22,-1
-Lx=[x[0],x[9],x[12],x[13],x[16],x[21],x[-1]]
-Ly=[y[0],y[9],y[12],y[13],y[16],y[21],y[-1]]
+Lx=[x[0],x[9],x[12],x[16],x[-1]]
+Ly=[y[0],y[9],y[12],y[16],y[-1]]
 
 # Fonction qui :
 # enlève les lignes droites (en laisant début/fin)
